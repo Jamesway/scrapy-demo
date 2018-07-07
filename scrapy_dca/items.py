@@ -36,3 +36,4 @@ class PhysicianItem(Item):
     ethnicity = Field()
     language = Field()
     gender = Field()
+    scraped_at = Field()

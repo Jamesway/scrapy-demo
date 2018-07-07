@@ -1,0 +1,8 @@
+version: "2"
+services:
+  scrapy:
+    image: jamesway/scrapy
+    working_dir: /code
+    volumes:
+      - ./:/code
+    env_file: .env

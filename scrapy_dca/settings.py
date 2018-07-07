@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 # Scrapy settings for scrapy_dca project
 #
 # For simplicity, this file contains only settings considered important or
@@ -64,9 +64,9 @@ SPIDER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'scrapy_dca.pipelines.JsonPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'scrapy_dca.pipelines.ScrapyDcaPipeline': 300,
+}
 
 LOG_LEVEL = 'INFO'
 
@@ -90,3 +90,14 @@ LOG_LEVEL = 'INFO'
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+#Added a connection string for mysql - values come from .env
+CONNECTION_STRING = "{drivername}://{user}:{passwd}@{host}:{port}/{db_name}?charset=utf8".format(
+    drivername = "mysql",
+    user = os.getenv("MYSQL_USER"),
+    passwd = os.getenv("MYSQL_PASSWORD"),
+    host = os.getenv("MYSQL_HOST"),
+    port = "3306",
+    db_name = os.getenv("MYSQL_DATABASE"),
+)

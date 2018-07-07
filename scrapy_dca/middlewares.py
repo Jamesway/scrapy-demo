@@ -7,23 +7,13 @@
 
 from time import sleep
 from scrapy import signals
-#from selenium import webdriver
 
 class SeleniumChrome(object):
 
     def process_request(self, request, spider):
 
-        # https://stackoverflow.com/a/47603459
-        #options = webdriver.ChromeOptions()
-        #options.add_argument('--disable-extensions')
-        #options.add_argument('--headless')
-        #options.add_argument('--disable-gpu')
-        #options.add_argument('--no-sandbox')
-        #driver = webdriver.Chrome(chrome_options=options)
-        #driver.get(request.url)
         if request.meta['driver'] == 'chrome':
             driver = spider.driver
-            #driver = request.meta['driver']
             driver.get(request.url)
             body = driver.page_source
             return TextResponse(driver.current_url, body=body, encoding='utf-8', request=request)

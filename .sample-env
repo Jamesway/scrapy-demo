@@ -1,0 +1,8 @@
+# This is a sample .env file
+# Copy it and rename to .env with your secrets/settings
+# Then make sure to .gitignore the .env file you created before committing
+
+MYSQL_USER=user
+MYSQL_PASSWORD=password
+MYSQL_HOST=host
+MYSQL_DATABASE=db_name
