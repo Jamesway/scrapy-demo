@@ -1,8 +1,16 @@
 # This is a sample .env file
-# Copy it and rename to .env with your secrets/settings
-# Then make sure to .gitignore the .env file you created before committing
+# Copy and rename to .env and enter your values
+# It's a good idea to copy and not just move this to .env so the sample gets version controlled for other devs to see
+# Then make sure to .gitignore the .env file before committing
 
+# this is for the optional docker-compose mariadb service
+MYSQL_ROOT_PASSWORD=rootpassword
+
+# these are for mariadb service and the scrapy connection string (settings.py)
 MYSQL_USER=user
 MYSQL_PASSWORD=password
-MYSQL_HOST=host
 MYSQL_DATABASE=db_name
+
+# this is only for the app connection string (settings.py)
+# if using the mariadb service in docker-compose leave this as the service name, mariadb
+MYSQL_HOST=mariadb

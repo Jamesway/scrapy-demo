@@ -20,7 +20,7 @@ class PostSpider(scrapy.Spider):
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     driver = webdriver.Chrome(chrome_options=options)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(2)
 
     scrape_time = datetime.now()
 
@@ -55,7 +55,7 @@ class PostSpider(scrapy.Spider):
         self.driver.find_element_by_id('srchSubmitHome').click()
 
         # this gives time for the slow loading results page to load
-        sleep(5)
+        sleep(2)
 
         response = TextResponse(url=self.driver.current_url, body=self.driver.page_source, encoding='utf-8')
         #self.parse_shell(response)

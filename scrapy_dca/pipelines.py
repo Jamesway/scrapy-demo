@@ -41,8 +41,10 @@ class ScrapyDcaPipeline(object):
         db1.scraped_at = item['scraped_at']
 
         try:
-            session.add(db1)
-            session.commit()
+            # add a physician if they're new
+            if not session.query(PhysicianDB).filter_by(license=db1.license).first():
+                session.add(db1)
+                session.commit()
         except:
             session.rollback()
             raise

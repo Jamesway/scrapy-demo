@@ -6,3 +6,19 @@ services:
     volumes:
       - ./:/code
     env_file: .env
+
+  mariadb:
+    image: mariadb:10.3
+    volumes:
+      - dbdata:/var/lib/mysql
+    env_file: .env
+    ports:
+      - 3306:3306
+
+# Named volumes persist after their container is removed which makes them ideal for data storage containers.
+# When making changes to a service config (eg. mariadb) that uses "dbdata",
+# or if mariadb becomes corrupted, remove the named volume and start fresh before bringing the stack up
+volumes:
+
+  # anonymous volume
+  dbdata:
