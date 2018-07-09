@@ -1,25 +1,38 @@
-## Scrapy Python Scraper Demo
-Scrapy demo using my Scrapy Docker image to scrape the California DCA Physician Survey. The Physician Survey uses lots of javascript that scrapy can't handle. This demo uses selenium and chrome/chromedriver to handle js interactions.  
+# Scrapy Python Scraper Demo
+Scrapy demo using my [scrapy docker image](https://hub.docker.com/r/jamesway/scrapy/) to scrape the [California DCA Physician Survey](https://search.dca.ca.gov/physicianSurvey).
+The Physician Survey uses lots of javascript that native scrapy can't handle. This demo uses Selenium and Chrome/Chromedriver to handle js interactions.
 
-Also, Scrapy is built on the Python Twisted framework, ie it operates in a non-blocking fashion, so Spiders aren't procedural.
+Since the demo requires a js controlled form to be filled we initiate the form interactions with Selenium then hand off to scrapy, then back to Selenium....
 
-### Requirements
-Docker
+Scrapy is built on the Python Twisted framework, ie it operates in a non-blocking fashion, so Spiders operate with concurrency.
 
-### Installation
-Clone this repo and unzip
 
-### Usage
+## Requirements
+- Docker
+
+## Usage
 ```
-cd scrapy_dca
+cd scrapy-demo
 
-# scrape to a json list
-docker run --rm -v $(pwd):/code jamesway/scrapy crawl dca_spider -o result.jl
+# copy the sample.env to .env and update the values in .env
+cp .sample.env .env
+
+# bring up the mariadb service
+docker-compose up -d
+
+# crawl the dca -  it make take a few seconds to get started
+# the dca is a gov site so it's not super responsive
+# "run --rm" removes the container when finished
+docker-compose run --rm scrapy crawl dca_spider
 ```
 
-## Build Your Own Spider
+** Note: docker-compose uses a named volume for the mariadb service so the data will persist
+To remove the volume: ```docker volume rm [first 3 or 4 chars of id]```**
+
+## Build Your Spider
 
 1. Start a Project
+There are a lot of similar concepts between scrapy and django
 https://docs.scrapy.org/en/latest/intro/tutorial.html
 ```
 docker run --rm -v $(pwd):/code jamesway/scrapy startproject [scrapy_project_name]

@@ -1,6 +1,6 @@
-import json
+
 from scrapy_dca.items import PhysicianItem
-import scrapy
+from scrapy import Spider
 from scrapy.http import TextResponse
 from scrapy.shell import inspect_response
 from selenium import webdriver
@@ -8,7 +8,8 @@ from selenium.webdriver.support.ui import Select
 from datetime import datetime
 from time import sleep
 
-class PostSpider(scrapy.Spider):
+class PostSpider(Spider):
+
     name = 'dca_spider'
     allowed_domains = ['search.dca.ca.gov']
     start_urls = ['https://search.dca.ca.gov/physicianSurvey']
@@ -24,26 +25,20 @@ class PostSpider(scrapy.Spider):
 
     scrape_time = datetime.now()
 
-    # def start_requests(self):
-    #     # overwrite start_requests if we need to
-    #     # otherwise scrapy generates start_requests from start_urls[]
-    #     # and calls parse() as the default callback
-    #
-    #     for s in self.start_urls:
-    #         request = self.make_requests_from_url(s)
-    #         # request.callback = self.parse_shell
-    #
-    #         yield request
+    # if the results are less than this
+    # the number of crawlable links was less or
+    # there were dups, check the dup filtered count
+    crawl_limit = 50
 
 
-    # use selenium to generate a form response
     def get_selenium_response(self, url):
 
+        # http://selenium-python.readthedocs.io/navigating.html#filling-in-forms
+        # use selenium to fill the form and submit
+        # return a scrapy response object
 
         self.driver.get(url)
 
-        # fill the form and submit
-        # http://selenium-python.readthedocs.io/navigating.html#filling-in-forms
         zipcode = self.driver.find_element_by_id('pzip')
         zipcode.send_keys('90025')
         license = Select(self.driver.find_element_by_id('licenseType'))
@@ -58,11 +53,68 @@ class PostSpider(scrapy.Spider):
         sleep(2)
 
         response = TextResponse(url=self.driver.current_url, body=self.driver.page_source, encoding='utf-8')
-        #self.parse_shell(response)
+
+        # to debug
+        # self.parse_shell(response)
+
         return response
 
 
-    def parse_physician(self, response):
+    def start_requests(self):
+
+        # overriding start_requests() is not usually necessary unless:
+        # - we need to use selenium to interact with a form
+        # - we want to customize parts of the request object
+        #
+        # if we don't override start_requests(),
+        # scrapy generates requests from urls in start_urls[]
+        # and calls parse() as the default callback
+        #
+        # for s in self.start_urls:
+        #     request = self.make_requests_from_url(s)
+        #     # request.callback = self.parse_shell
+        #
+        #     yield request
+        #
+        # since we need selenium for the js form interactions we're going to circumvent creating a request
+        # instead we create a scrapy response object from the selenium form results
+        # then we use the xpath selector of the response object to create links to follow
+
+
+        for s in self.start_urls:
+
+            # puts selenium response back into a scrapy response so we can use response.xpath and response.css
+            print('crawling [' + s + '], hang tight...')
+            selenium_response = self.get_selenium_response(s)
+
+            links = selenium_response.xpath(
+                '//ul[contains(@class, "actions")]/li/a[contains(@class, "button newTab")]/@href'
+            ).extract()
+
+            limit = min(self.crawl_limit, len(links))
+
+            print('crawling ' + str(limit) + ' links of ' + str(len(links)) + ' available')
+
+            for l in links[:limit]:
+                # follow the links and use the parse_physician callback
+
+                # for debugging
+                # yield selenium_response.follow(l, self.parse_shell)
+
+                # to pass a named parser
+                # yield selenium_response.follow(l, self.parse_physician)
+
+                # use the default parser
+                yield selenium_response.follow(l)
+
+
+    def parse(self, response):
+
+        # default parser
+        # even though you are't required to create a start_requests method,
+        # you'll want to have a parser defined or nothing happens to the reponse data
+        # we could name like below or have multiple named parsers
+        # def parse_physician(self, response):
 
         item = PhysicianItem()
 
@@ -89,26 +141,10 @@ class PostSpider(scrapy.Spider):
         # non-greedy matches
         item['services'] = list(filter(None, response.css('.survAnswer')[7].re(r'>(.*?)<')))
         item['address'] = response.css('#address .wrapWithSpace').re(r'>(.*?)<br')
-        item['certifications'] = json.dumps(list(filter(None, response.css('.survAnswer')[8].re(r'>(.*?)<'))))
+        item['certifications'] = list(filter(None, response.css('.survAnswer')[8].re(r'>(.*?)<')))
 
         item['scraped_at'] = self.scrape_time
         yield item
-
-
-    # default parser
-    def parse(self, response):
-
-        print(response.url)
-
-        # Here you got response from webdriver
-        # you can use selectors to extract data from it
-        selenium_response = self.get_selenium_response(response.url)
-
-        for link in selenium_response.xpath('//ul[contains(@class, "actions")]/li/a[contains(@class, "newTab")]/@href'):
-
-            # follow the links and use the parse_physician callback
-            #yield selenium_response.follow(link, self.parse_shell)
-            yield selenium_response.follow(link, self.parse_physician)
 
 
     # helps debugging extractions
