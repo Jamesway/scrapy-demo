@@ -21,17 +21,18 @@ Scrapy is built on the Python Twisted framework, ie it operates in a non-blockin
 cd scrapy-demo
 
 # copy the sample.env to .env and update the values in .env
-cp .sample.env .env
+cp .sample-env .env
 
 # bring up the mariadb service
 docker-compose up -d
 
-# crawl the dca -  it make take a several seconds to get started
+# crawl the dca -  it make take a several seconds (20 - 30) to get started
 # the dca is a gov site so it's not super responsive
 # "run --rm" removes the container when finished
 docker-compose run --rm scrapy crawl dca_spider
 
-# connect to mariadb using the docker machine ip (usually 192.168.99.100)
+# verify the data
+# connect to mariadb using credentials in .env and the docker machine ip (usually 192.168.99.100)
 ```
 
 **Note: docker-compose uses a named volume for the mariadb service so the data will persist.**  
