@@ -30,6 +30,8 @@ docker-compose up -d
 # the dca is a gov site so it's not super responsive
 # "run --rm" removes the container when finished
 docker-compose run --rm scrapy crawl dca_spider
+
+# connect to mariadb using the docker machine ip (usually 192.168.99.100)
 ```
 
 **Note: docker-compose uses a named volume for the mariadb service so the data will persist.**  
